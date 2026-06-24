@@ -54,7 +54,7 @@ download_file_from_gcs <- function(bucket_name, object_name, dest_path) {
 downloadInboxFile  <- function(inboxVariables, file_suffix, destination_folder, extension) {
   if (!is.null(inboxVariables)) {
     # Construct dynamic arguments
-    bucket_name <- paste0(inboxVariables$iinbox_name, "-inbox-other")
+    bucket_name <- paste0(inboxVariables$iinbox_name, "inbox-other")
     source_file <- paste0(inboxVariables$prefix_upper, "_", file_suffix, extension)
     destination_path <- paste0(destination_folder, "/", inboxVariables$prefix_upper, "_", file_suffix, extension)
     
@@ -135,9 +135,7 @@ ui <- fluidPage(
     condition = "output.isLoggedIn == true && !output.inboxSelected",
     fluidPage(
       h2("Choose Inbox"),
-      actionButton("canberra", "Canberra"),
-      actionButton("ottawa", "Ottawa"),
-      actionButton("wellington", "Wellington")
+      actionButton("canberra", "Canberra")
     )
   ),
   
@@ -208,22 +206,6 @@ server <- function(input, output, session) {
       id_label_inbox = "Label_4013903200620411993",
       id_label_retrieved = "Label_3037043592402205091",
       id_label_discard ="Label_5527042881718374213"
-    ),
-    Ottawa = list(
-      iinbox_name = "ottawa",
-      prefix_lower = "otw",
-      prefix_upper = "OTW",
-      id_label_inbox = "Label_1486984644930214210",
-      id_label_retrieved = "Label_3010547458625304725",
-      id_label_discard ="Label_8600256955940380876"
-    ),
-    Wellington = list(
-      iinbox_name = "wellingtonnz",
-      prefix_lower = "wlg",
-      prefix_upper = "WLG",
-      id_label_inbox = "Label_5009743614736854962",
-      id_label_retrieved = "Label_7990110882756903129",
-      id_label_discard ="Label_3093819538298751041"
     )
   )
   
@@ -246,14 +228,6 @@ server <- function(input, output, session) {
     update_inbox_variables("Canberra")
   })
   
-  observeEvent(input$ottawa, {
-    update_inbox_variables("Ottawa")
-  })
-  
-  observeEvent(input$wellington, {
-    update_inbox_variables("Wellington")
-  })
-  
   # Function to update variables dynamically
   update_inbox_variables <- function(inbox) {
     rv$inboxChosen <- inbox
@@ -270,36 +244,16 @@ server <- function(input, output, session) {
   # Gmail and Google Storage Authentication
   authenticate_gmail_and_storage <- function(inbox) {
     if (inbox == "Canberra") {
-      gm_auth_configure(path = "./credentials_gmail_desktop.json")
+      gm_auth_configure(path = "./credentials.json")
       options(
         gargle_verbosity = "debug",
         gargle_oauth_cache = ".secret",
-        gargle_oauth_email = "canberra.inbox@gmail.com"
+        gargle_oauth_email = "email@gmail.com"
       )
-      gm_auth(email = "canberra.inbox@gmail.com")
+      gm_auth(email = "email@gmail.com")
       path_json <- Sys.getenv("GAR_CLIENT_JSON")
       gcs_auth(path_json)
-    } else if (inbox == "Ottawa") {
-      gm_auth_configure(path = "./ottawa_credentials_gmail.json")
-      options(
-        gargle_verbosity = "debug",
-        gargle_oauth_cache = ".secretottawa",
-        gargle_oauth_email = "inbox.ottawa@gmail.com"
-      )
-      gm_auth(email = "inbox.ottawa@gmail.com")
-      path_json <- Sys.getenv("GAR_CLIENT_JSON_OTTAWA")
-      gcs_auth(path_json)
-    } else if (inbox == "Wellington") {
-      gm_auth_configure(path = "./wellingtonnz_credentials_gmail.json")
-      options(
-        gargle_verbosity = "debug",
-        gargle_oauth_cache = ".secretWellingtonnz",
-        gargle_oauth_email = "wellingtonnz.inbox@gmail.com"
-      )
-      gm_auth(email = "wellingtonnz.inbox@gmail.com")
-      path_json <- Sys.getenv("GAR_CLIENT_JSON_WELLINGTONNZ")
-      gcs_auth(path_json)
-    }
+    }  
     showModal(modalDialog(
       title = paste(inbox, "Authentication Successful"),
       "You are now authenticated for the selected inbox.",
@@ -521,11 +475,11 @@ server <- function(input, output, session) {
   observeEvent(input$create_update_corpus, {
     if (approval_completed()) {
       #Define paths 
-      bucket_name_c = paste0(rv$inboxVariables$iinbox_name, "-inbox-other")
-      corpus_path <- paste0("data/",rv$inboxVariables$prefix_lower, "_inbox_corpus.rds")
-      csv_path <- paste0("data/",rv$inboxVariables$prefix_upper, "_Inbox_MAIN.csv")
-      corpus_name <- paste0(rv$inboxVariables$prefix_lower, "_inbox_corpus.rds")
-      csv_name <- paste0(rv$inboxVariables$prefix_upper, "_Inbox_MAIN.csv")
+      bucket_name_c = paste0(rv$inboxVariables$iinbox_name, "inbox-other")
+      corpus_path <- paste0("data/",rv$inboxVariables$prefix_lower, "inbox_corpus.rds")
+      csv_path <- paste0("data/",rv$inboxVariables$prefix_upper, "Inbox_MAIN.csv")
+      corpus_name <- paste0(rv$inboxVariables$prefix_lower, "inbox_corpus.rds")
+      csv_name <- paste0(rv$inboxVariables$prefix_upper, "Inbox_MAIN.csv")
 
       # Attempt to download files
       corpus_downloaded <- safe_download_file_from_gcs(bucket_name_c, corpus_name, corpus_path)
@@ -533,9 +487,7 @@ server <- function(input, output, session) {
       
       if (!corpus_downloaded) {
         metadata_mapping <- list(
-          "canberra" = metadata_columns,
-          "wellingtonnz" = metadata_columns_w,
-          "ottawa" = metadata_columns_o
+          "canberra" = metadata_columns
         )
         
         cbr_inbox_main <- read.csv(csv_path, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
@@ -594,9 +546,7 @@ server <- function(input, output, session) {
             # If new data exists, create and combine the corpus
             if (nrow(new_data1) > 0) {
               metadata_mapping <- list(
-                "canberra" = metadata_columns,
-                "wellingtonnz" = metadata_columns_w,
-                "ottawa" = metadata_columns_o
+                "canberra" = metadata_columns
               )
               
               new_corpus <- corpus(new_data1$message_body, docnames = new_data1$message_id)

@@ -20,7 +20,7 @@
   #Gmail
   path_gm_json <- Sys.getenv("GM_CLIENT_JSON")
   gm_auth_configure(path = path_gm_json)
-  gm_auth(email = "canberra.inbox@gmail.com")
+  gm_auth(email = "email@gmail.com")
   
   # Google Storage
   path_json <- Sys.getenv("GAR_CLIENT_JSON")
@@ -52,16 +52,10 @@
     
     # Upload the file to Google Cloud Storage
     gcs_upload(temp_file, 
-               bucket = "canberra-inbox-html-other", 
+               bucket = "canberra-inbox", 
                name = object_name,
                predefinedAcl='publicRead'
                )
-    
-    #Update the email's label to "Retrieved"
-    # gmailr::gm_modify_message(
-    #   id = message_id,
-    #   add_labels = "Label_3037043592402205091"
-    # )
     
     return(content)
   }
@@ -73,7 +67,7 @@
     write.csv(df, temp_file, row.names = FALSE, fileEncoding = "UTF-8")
     
     # Upload the CSV to Google Cloud Storage
-    gcs_upload(temp_file, bucket = "canberra-inbox-other", name = name_file_csv)
+    gcs_upload(temp_file, bucket = "inbox-other", name = name_file_csv)
   }
   
  # Function to clean HTML content
