@@ -1,7 +1,5 @@
 GM_CLIENT_JSON = "./credentials.json"
 GAR_CLIENT_JSON = "./canberrainbox.json"
-GAR_CLIENT_JSON_OTTAWA = "./ottawa_inbox.json"
-GAR_CLIENT_JSON_WELLINGTONNZ = "./wellingtonnz_inbox.json"
 GMAILR_KEY = "your_key"
 USER = "your_user"
 PASSWORD = "your_password"
